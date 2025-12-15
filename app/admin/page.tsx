@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+// Hardcoded token for now (should match NEXT_PUBLIC_ACCESS_TOKEN in env)
+const REQUIRED_ACCESS_TOKEN = 'gift_access_d7f8e9a0b1c2d3e4f5a6b7c8d9e0f1a2'
+
 export default function AdminLoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -10,9 +13,21 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [accessDenied, setAccessDenied] = useState(false)
+
+  // Check access token
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (!token || token !== REQUIRED_ACCESS_TOKEN) {
+      setAccessDenied(true)
+      return
+    }
+  }, [searchParams])
 
   // Auto-login if credentials passed via URL (for mock app integration)
   useEffect(() => {
+    if (accessDenied) return
+    
     const autoLogin = searchParams.get('auto')
     const urlUsername = searchParams.get('u')
     const urlPassword = searchParams.get('p')
@@ -23,7 +38,7 @@ export default function AdminLoginPage() {
       // Automatically submit login
       performLogin(urlUsername, urlPassword)
     }
-  }, [searchParams])
+  }, [searchParams, accessDenied])
 
   const performLogin = async (user: string, pass: string) => {
     setError('')
@@ -53,6 +68,22 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     performLogin(username, password)
+  }
+
+  if (accessDenied) {
+    return (
+      <div className="container">
+        <div className="card" style={{ maxWidth: '500px', margin: '2rem auto', textAlign: 'center' }}>
+          <h1 style={{ color: '#e53e3e', marginBottom: '1rem' }}>🚫 Access Denied</h1>
+          <p style={{ color: '#718096', marginBottom: '1.5rem' }}>
+            This page can only be accessed from the authorized company portal.
+          </p>
+          <p style={{ color: '#a0aec0', fontSize: '0.9rem' }}>
+            Please contact your system administrator if you believe this is an error.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (

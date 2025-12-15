@@ -649,7 +649,8 @@
             const baseAdminUrl = document.getElementById('adminSystemUrl').value.trim() || 'http://localhost:3000/admin';
             
             // Pass credentials via URL for auto-login (only for local development)
-            const adminUrl = `${baseAdminUrl}?auto=true&u=admin&p=admin123`;
+            // Include access token for security
+            const adminUrl = `${baseAdminUrl}?token=${accessToken}&auto=true&u=admin&p=admin123`;
             window.open(adminUrl, '_blank');
         });
 
