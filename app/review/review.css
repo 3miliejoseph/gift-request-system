@@ -1,0 +1,156 @@
+.review-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #B8E3F0 0%, #A8D8E8 100%);
+  padding: 2rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.logo {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  color: #1E5A7D;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.main-card {
+  background: linear-gradient(135deg, #5DADE2 0%, #4A9FD8 100%);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+  margin-bottom: 1.5rem;
+}
+
+.review-header h2 {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.review-header p {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1rem;
+}
+
+.info-section {
+  background: linear-gradient(135deg, #E8F6FB 0%, #D4EDF7 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-section h3 {
+  color: #1E5A7D;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  color: #1E5A7D;
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.info-value {
+  color: #2C5F7D;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #D4EDF7 0%, #C8E8F3 100%);
+  color: #1E5A7D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  background: white;
+  color: #1E5A7D;
+  flex: 1;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #F0F9FC;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .review-page {
+    padding: 1rem;
+  }
+
+  .main-card {
+    padding: 1.5rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .info-label {
+    min-width: 150px;
+  }
+}
+```
+
+This CSS file styles your Review Request page with the IntoBridge design! 
+
+Your `/app/review/` folder should now have both files:
+```
+app/review/
+├── page.tsx      ✅
+└── review.css    ✅
