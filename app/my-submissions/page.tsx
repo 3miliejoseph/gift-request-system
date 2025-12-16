@@ -1,151 +1,147 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-
-const REQUIRED_ACCESS_TOKEN = 'gift_access_d7f8e9a0b1c2d3e4f5a6b7c8d9e0f1a2'
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import './my-submissions.css';
 
 interface Submission {
-  id: string
-  giftType: string
-  recipientUsername: string
-  recipientName: string
-  message: string | null
-  status: string
-  createdAt: string
-  processedAt: string | null
-  readOnlyData: any
+  id: string;
+  createdAt: string;
+  recipientUsername: string;
+  recipientName: string;
+  giftDuration: string;
+  message: string;
+  status: string;
 }
 
-export default function MySubmissionsPage() {
-  const searchParams = useSearchParams()
-  const accessToken = searchParams.get('token')
-  const userId = searchParams.get('userId')
-  
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  // Validate access token
-  if (!accessToken || accessToken !== REQUIRED_ACCESS_TOKEN) {
-    return (
-      <div className="container">
-        <div className="card" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
-          <h2 style={{ color: '#e53e3e' }}>Access Denied</h2>
-          <p style={{ marginTop: '1rem', marginBottom: '2rem' }}>
-            This application can only be accessed through the authorized company portal.
-          </p>
-          <div style={{ background: '#fff5f5', padding: '1rem', borderRadius: '8px', border: '1px solid #feb2b2' }}>
-            <p style={{ color: '#742a2a', fontSize: '0.875rem' }}>
-              <strong>Error:</strong> Invalid or missing access token
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+export default function MySubmissions() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
+    const userId = searchParams.get('userId');
+    const name = searchParams.get('userName');
+    
+    if (name) setUserName(name);
+    
     if (userId) {
-      fetchSubmissions()
+      fetchSubmissions(userId);
     }
-  }, [userId])
+  }, [searchParams]);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (userId: string) => {
     try {
-      const response = await fetch(`/api/submissions?userId=${userId}`)
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch submissions')
-      }
-      
-      setSubmissions(data.submissions)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const response = await fetch(`/api/submissions?userId=${userId}`);
+      const data = await response.json();
+      setSubmissions(data);
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (!userId) {
-    return (
-      <div className="container">
-        <div className="card">
-          <h2>Invalid Access</h2>
-          <p>User ID is required to view submissions.</p>
-        </div>
-      </div>
-    )
-  }
+  const handleNewRequest = () => {
+    // Pass all query params to the main form page
+    const params = new URLSearchParams(searchParams.toString());
+    router.push(`/?${params.toString()}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: '2-digit', 
+      day: '2-digit', 
+      year: 'numeric' 
+    });
+  };
+
+  const formatDuration = (duration: string) => {
+    const durations: { [key: string]: string } = {
+      'one-month': 'One Month',
+      'two-months': 'Two Months',
+      'three-months': 'Three Months'
+    };
+    return durations[duration] || duration;
+  };
 
   return (
-    <div className="container">
-      <h1>📋 My Submissions</h1>
-      
-      <div className="card">
-        <div className="header">
-          <h2>Your Gift Requests</h2>
-          <Link href={`/?userId=${userId}&userName=${searchParams.get('userName')}&userEmail=${searchParams.get('userEmail')}`}>
-            <button className="btn btn-primary">
-              + New Request
-            </button>
-          </Link>
+    <div className="submissions-page">
+      <div className="container">
+        {/* Logo */}
+        <div className="logo">
+          <svg width="200" height="50" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 30C20 24 24 20 30 20C36 20 40 24 40 30C40 36 36 40 30 40C24 40 20 36 20 30Z" fill="#4A9FD8"/>
+            <path d="M40 30C40 36 44 40 50 40C56 40 60 36 60 30C60 24 56 20 50 20C44 20 40 24 40 30Z" fill="#5DADE2"/>
+            <text x="75" y="40" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#1E5A7D">Into</text>
+            <text x="145" y="40" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#2C3E50">Bridge</text>
+            <text x="75" y="52" fontFamily="Arial, sans-serif" fontSize="12" fill="#4A9FD8">.com</text>
+          </svg>
         </div>
 
-        {error && (
-          <div className="alert alert-error">
-            {error}
-          </div>
-        )}
+        {/* Page Title */}
+        <h1 className="page-title">My Gift Requests</h1>
 
-        {isLoading ? (
-          <p>Loading your submissions...</p>
-        ) : submissions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-            <p>You haven't submitted any gift requests yet.</p>
-            <Link href={`/?userId=${userId}&userName=${searchParams.get('userName')}&userEmail=${searchParams.get('userEmail')}`}>
-              <button className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                Submit Your First Request
-              </button>
-            </Link>
+        {/* Main Card */}
+        <div className="main-card">
+          {/* Header Section */}
+          <div className="header-section">
+            <div className="welcome-text">
+              <h2>Welcome, {userName || 'User'}!</h2>
+              <p>Manage your gift requests below:</p>
+            </div>
+            <button className="new-request-btn" onClick={handleNewRequest}>
+              + New Request
+            </button>
           </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Duration</th>
-                  <th>Recipient Username</th>
-                  <th>Recipient Name</th>
-                  <th>Status</th>
-                  <th>Message</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{new Date(submission.createdAt).toLocaleDateString()}</td>
-                    <td>{submission.giftType}</td>
-                    <td>{submission.recipientUsername}</td>
-                    <td>{submission.recipientName}</td>
-                    <td>
-                      <span className={`badge badge-${submission.status.toLowerCase()}`}>
-                        {submission.status}
-                      </span>
-                    </td>
-                    <td>{submission.message || '-'}</td>
+
+          {/* Table */}
+          <div className="table-container">
+            {loading ? (
+              <div className="loading">Loading your requests...</div>
+            ) : submissions.length === 0 ? (
+              <div className="empty-state">
+                <p>No gift requests yet.</p>
+                <button className="new-request-btn" onClick={handleNewRequest}>
+                  Create your first request
+                </button>
+              </div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Duration</th>
+                    <th>Recipient Username</th>
+                    <th>Recipient Name</th>
+                    <th>Status</th>
+                    <th>Message</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {submissions.map((submission) => (
+                    <tr key={submission.id}>
+                      <td>{formatDate(submission.createdAt)}</td>
+                      <td>{formatDuration(submission.giftDuration)}</td>
+                      <td>{submission.recipientUsername}</td>
+                      <td>{submission.recipientName}</td>
+                      <td>
+                        <span className={`status-badge status-${submission.status.toLowerCase()}`}>
+                          {submission.status}
+                        </span>
+                      </td>
+                      <td className="message-cell">{submission.message || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
-  )
+  );
 }
-
