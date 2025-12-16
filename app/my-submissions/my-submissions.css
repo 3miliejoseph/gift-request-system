@@ -1,0 +1,197 @@
+x.submissions-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #B8E3F0 0%, #A8D8E8 100%);
+  padding: 2rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.logo {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  color: #1E5A7D;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.main-card {
+  background: linear-gradient(135deg, #5DADE2 0%, #4A9FD8 100%);
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.welcome-text {
+  color: white;
+}
+
+.welcome-text h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.welcome-text p {
+  font-size: 1.25rem;
+  opacity: 0.95;
+}
+
+.new-request-btn {
+  background: linear-gradient(135deg, #D4EDF7 0%, #C8E8F3 100%);
+  color: #1E5A7D;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.new-request-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.table-container {
+  background: linear-gradient(135deg, #C8E8F3 0%, #B8DDE8 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+th {
+  color: #1E5A7D;
+  font-weight: 700;
+  font-size: 1.125rem;
+  padding: 1.5rem;
+  text-align: left;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+tbody tr {
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+td {
+  padding: 1.5rem;
+  color: #1E5A7D;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #F4D03F 0%, #F7DC6F 100%);
+  color: #7D6608;
+}
+
+.status-processed {
+  background: linear-gradient(135deg, #52BE80 0%, #58D68D 100%);
+  color: #145A32;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #EC7063 0%, #F1948A 100%);
+  color: #7B241C;
+}
+
+.message-cell {
+  max-width: 350px;
+  color: #1E5A7D;
+  line-height: 1.5;
+}
+
+.loading, .empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #1E5A7D;
+  font-size: 1.125rem;
+}
+
+.empty-state p {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 1200px) {
+  .table-container {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .submissions-page {
+    padding: 1rem;
+  }
+
+  .main-card {
+    padding: 1.5rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .new-request-btn {
+    width: 100%;
+  }
+
+  .welcome-text h2 {
+    font-size: 2rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+}
