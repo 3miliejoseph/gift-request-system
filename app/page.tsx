@@ -1,456 +1,186 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import './page.css';
 
-const REQUIRED_ACCESS_TOKEN = 'gift_access_d7f8e9a0b1c2d3e4f5a6b7c8d9e0f1a2'
+export default function GiftRequestForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const [formData, setFormData] = useState({
+    recipientUsername: '',
+    recipientName: '',
+    giftDuration: '',
+    message: ''
+  });
 
-interface Submission {
-  id: string
-  giftType: string
-  recipientUsername: string
-  recipientName: string
-  message: string | null
-  status: string
-  createdAt: string
-  processedAt: string | null
-  readOnlyData: any
-}
-
-export default function FormPage() {
-  const searchParams = useSearchParams()
-  
-  // Get params from URL (passed from main app)
-  const [accessToken] = useState(searchParams.get('token') || '')
-  const [userId] = useState(searchParams.get('userId') || '')
-  const [userName] = useState(searchParams.get('userName') || '')
-  const [userEmail] = useState(searchParams.get('userEmail') || '')
-  const [companyName] = useState(searchParams.get('companyName') || '')
-  const [department] = useState(searchParams.get('department') || '')
-  
-  // Form inputs
-  const [giftType, setGiftType] = useState('')
-  const [recipientUsername, setRecipientUsername] = useState('')
-  const [recipientName, setRecipientName] = useState('')
-  const [message, setMessage] = useState('')
-  
-  // UI state
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showReview, setShowReview] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [showForm, setShowForm] = useState(false)
-  const [error, setError] = useState('')
-  
-  // Submissions state
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(true)
-  const [submissionsError, setSubmissionsError] = useState('')
+  const [userInfo, setUserInfo] = useState({
+    userId: '',
+    userName: '',
+    userEmail: '',
+    companyName: '',
+    department: ''
+  });
 
   useEffect(() => {
-    if (userId) {
-      fetchSubmissions()
-    }
-  }, [userId])
+    // Get user info from URL params
+    setUserInfo({
+      userId: searchParams.get('userId') || '',
+      userName: searchParams.get('userName') || '',
+      userEmail: searchParams.get('userEmail') || '',
+      companyName: searchParams.get('companyName') || '',
+      department: searchParams.get('department') || ''
+    });
+  }, [searchParams]);
 
-  const fetchSubmissions = async () => {
-    try {
-      const response = await fetch(`/api/submissions?userId=${userId}`)
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch submissions')
-      }
-      
-      setSubmissions(data.submissions)
-    } catch (err) {
-      setSubmissionsError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setIsLoadingSubmissions(false)
-    }
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    // Show review page instead of submitting immediately
-    setShowReview(true)
-  }
-
-  const handleConfirmSubmit = async () => {
-    setError('')
-    setIsSubmitting(true)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    try {
-      const response = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          userName,
-          userEmail,
-          readOnlyData: { companyName, department },
-          giftType,
-          recipientUsername,
-          recipientName,
-          message
-        })
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit form')
-      }
-      
-      setShowReview(false)
-      setShowConfirmation(true)
-      setShowForm(false)
-      // Reset form
-      setGiftType('')
-      setRecipientUsername('')
-      setRecipientName('')
-      setMessage('')
-      // Refresh submissions list
-      fetchSubmissions()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+    // Store form data in sessionStorage
+    sessionStorage.setItem('giftRequestData', JSON.stringify({
+      ...formData,
+      ...userInfo
+    }));
+    
+    // Navigate to review page with query params
+    const params = new URLSearchParams(searchParams.toString());
+    router.push(`/review?${params.toString()}`);
+  };
 
-  const handleCancelReview = () => {
-    setShowReview(false)
-    setError('')
-  }
+  const handleBack = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    router.push(`/my-submissions?${params.toString()}`);
+  };
 
-  // Validate access token first
-  if (!accessToken || accessToken !== REQUIRED_ACCESS_TOKEN) {
-    return (
+  return (
+    <div className="gift-form-page">
       <div className="container">
-        <div className="card" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔒</div>
-          <h2 style={{ color: '#e53e3e' }}>Access Denied</h2>
-          <p style={{ marginTop: '1rem', marginBottom: '2rem' }}>
-            This application can only be accessed through the authorized company portal.
-          </p>
-          <div style={{ background: '#fff5f5', padding: '1rem', borderRadius: '8px', border: '1px solid #feb2b2' }}>
-            <p style={{ color: '#742a2a', fontSize: '0.875rem' }}>
-              <strong>Error:</strong> Invalid or missing access token
-            </p>
-            <p style={{ color: '#742a2a', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-              Please contact your system administrator if you believe this is an error.
-            </p>
-          </div>
+        {/* Logo */}
+        <div className="logo">
+          <svg width="200" height="50" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 30C20 24 24 20 30 20C36 20 40 24 40 30C40 36 36 40 30 40C24 40 20 36 20 30Z" fill="#4A9FD8"/>
+            <path d="M40 30C40 36 44 40 50 40C56 40 60 36 60 30C60 24 56 20 50 20C44 20 40 24 40 30Z" fill="#5DADE2"/>
+            <text x="75" y="40" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#1E5A7D">Into</text>
+            <text x="145" y="40" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="bold" fill="#2C3E50">Bridge</text>
+            <text x="75" y="52" fontFamily="Arial, sans-serif" fontSize="12" fill="#4A9FD8">.com</text>
+          </svg>
         </div>
-      </div>
-    )
-  }
 
-  if (!userId || !userName) {
-    return (
-      <div className="container">
-        <div className="card">
-          <h2>Invalid Access</h2>
-          <p>This page must be accessed from the main application with valid user credentials.</p>
-          <p style={{ marginTop: '1rem', color: '#666' }}>
-            Missing parameters: userId or userName
-          </p>
-        </div>
-      </div>
-    )
-  }
+        {/* Page Title */}
+        <h1 className="page-title">Gift Request Form</h1>
 
-  // If showing form, render the form
-  if (showForm && !showReview && !showConfirmation) {
-    return (
-      <div className="container">
-        <h1>🎁 Gift Request Form</h1>
-        
-        <div className="card">
-          <button 
-            onClick={() => setShowForm(false)}
-            className="nav-link"
-            style={{ marginBottom: '1rem', padding: '0.5rem 1rem' }}
-          >
-            ← Back to My Requests
+        {/* Main Card */}
+        <div className="main-card">
+          {/* Back Button */}
+          <button className="back-button" onClick={handleBack}>
+            ← Back To My Requests
           </button>
 
-          {/* Read-only section */}
-          <div className="read-only-section">
+          {/* Your Information Section */}
+          <div className="info-section">
             <h3>Your Information</h3>
-            <div className="read-only-item">
-              <strong>Name:</strong> {userName}
+            <div className="info-row">
+              <span className="info-label">Name:</span>
+              <span className="info-value">{userInfo.userName}</span>
             </div>
-            <div className="read-only-item">
-              <strong>Email:</strong> {userEmail}
+            <div className="info-row">
+              <span className="info-label">Email:</span>
+              <span className="info-value">{userInfo.userEmail}</span>
             </div>
-            {companyName && (
-              <div className="read-only-item">
-                <strong>Company:</strong> {companyName}
-              </div>
-            )}
-            {department && (
-              <div className="read-only-item">
-                <strong>Department:</strong> {department}
-              </div>
-            )}
+            <div className="info-row">
+              <span className="info-label">Company:</span>
+              <span className="info-value">{userInfo.companyName || 'N/A'}</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">Department:</span>
+              <span className="info-value">{userInfo.department || 'N/A'}</span>
+            </div>
           </div>
 
-          <h2>Gift Request Details</h2>
-          
-          {error && (
-            <div className="alert alert-error">
-              {error}
-            </div>
-          )}
-
+          {/* Gift Request Details Form */}
           <form onSubmit={handleSubmit}>
+            <h2 className="form-section-title">Gift Request Details</h2>
+
             <div className="form-group">
-              <label htmlFor="giftType">Gift Duration *</label>
-              <select
-                id="giftType"
-                value={giftType}
-                onChange={(e) => setGiftType(e.target.value)}
+              <label htmlFor="recipientUsername">
+                Recipient Username <span className="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="recipientUsername"
+                name="recipientUsername"
+                placeholder="Please enter recipient's username"
+                value={formData.recipientUsername}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="recipientName">
+                Recipient Full Name <span className="required">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="recipientName"
+                name="recipientName"
+                placeholder="Please enter recipient's full name"
+                value={formData.recipientName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="giftDuration">
+                Gift Duration <span className="required">*</span>
+              </label>
+              <select 
+                id="giftDuration"
+                name="giftDuration"
+                value={formData.giftDuration}
+                onChange={handleInputChange}
                 required
               >
-                <option value="">Select duration</option>
-                <option value="One Month">One Month</option>
-                <option value="Two Months">Two Months</option>
-                <option value="Three Months">Three Months</option>
+                <option value="" disabled>Select gift duration</option>
+                <option value="one-month">One Month</option>
+                <option value="two-months">Two Months</option>
+                <option value="three-months">Three Months</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label htmlFor="recipientUsername">Recipient Username *</label>
-              <input
-                type="text"
-                id="recipientUsername"
-                value={recipientUsername}
-                onChange={(e) => setRecipientUsername(e.target.value)}
-                placeholder="Enter recipient's username"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="recipientName">Recipient Full Name *</label>
-              <input
-                type="text"
-                id="recipientName"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Enter recipient's full name"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="message">Message (Optional)</label>
-              <textarea
+              <label htmlFor="message">
+                Message (Optional)
+              </label>
+              <textarea 
                 id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Add a personal message..."
-                rows={4}
+                name="message"
+                placeholder="Include a personal message..."
+                value={formData.message}
+                onChange={handleInputChange}
               />
             </div>
 
-            <div className="btn-group">
-              <button 
-                type="submit" 
-                className="btn btn-primary"
-              >
+            <div className="button-group">
+              <button type="submit" className="btn btn-primary">
                 Review Request →
               </button>
-              <button 
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="btn btn-secondary"
-              >
+              <button type="button" className="btn btn-secondary" onClick={handleBack}>
                 Cancel
               </button>
             </div>
           </form>
         </div>
       </div>
-    )
-  }
-
-  if (showReview) {
-    return (
-      <div className="container">
-        <h1>🔍 Review Your Request</h1>
-        
-        <div className="card">
-          <h2>Please Review Your Information</h2>
-          <p className="subtitle">Please confirm all details are correct before submitting</p>
-
-          {error && (
-            <div className="alert alert-error">
-              {error}
-            </div>
-          )}
-
-          {/* User Information */}
-          <div className="read-only-section">
-            <h3>Your Information</h3>
-            <div className="read-only-item">
-              <strong>Name:</strong> {userName}
-            </div>
-            <div className="read-only-item">
-              <strong>Email:</strong> {userEmail}
-            </div>
-            {companyName && (
-              <div className="read-only-item">
-                <strong>Company:</strong> {companyName}
-              </div>
-            )}
-            {department && (
-              <div className="read-only-item">
-                <strong>Department:</strong> {department}
-              </div>
-            )}
-          </div>
-
-          {/* Gift Request Details */}
-          <div className="read-only-section">
-            <h3>Gift Request Details</h3>
-            <div className="read-only-item">
-              <strong>Gift Duration:</strong> {giftType}
-            </div>
-            <div className="read-only-item">
-              <strong>Recipient Username:</strong> {recipientUsername}
-            </div>
-            <div className="read-only-item">
-              <strong>Recipient Full Name:</strong> {recipientName}
-            </div>
-            <div className="read-only-item">
-              <strong>Message:</strong> {message || 'No message'}
-            </div>
-          </div>
-
-          <div className="btn-group">
-            <button 
-              onClick={handleConfirmSubmit}
-              className="btn btn-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : '✓ Confirm and Submit'}
-            </button>
-            <button 
-              onClick={handleCancelReview}
-              className="btn btn-secondary"
-              disabled={isSubmitting}
-            >
-              ← Go Back to Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (showConfirmation) {
-    return (
-      <div className="container">
-        <div className="card">
-          <h2>✅ Submission Successful!</h2>
-          <div className="alert alert-success">
-            Your gift request has been submitted successfully and is now pending approval.
-          </div>
-          <div className="btn-group">
-            <button 
-              onClick={() => setShowConfirmation(false)}
-              className="btn btn-primary"
-            >
-              Submit Another Request
-            </button>
-            <Link href={`/my-submissions?token=${accessToken}&userId=${userId}&userName=${userName}&userEmail=${userEmail}`}>
-              <button className="btn btn-secondary">
-                View My Submissions
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Default view: Show submissions list
-  return (
-    <div className="container">
-      <h1>🎁 My Gift Requests</h1>
-      
-      <div className="card">
-        <div className="header">
-          <div>
-            <h2>Welcome, {userName}!</h2>
-            <p className="subtitle">Manage your gift requests below</p>
-          </div>
-          <button 
-            onClick={() => setShowForm(true)}
-            className="btn btn-primary"
-          >
-            + New Request
-          </button>
-        </div>
-
-        {submissionsError && (
-          <div className="alert alert-error">
-            {submissionsError}
-          </div>
-        )}
-
-        {isLoadingSubmissions ? (
-          <p>Loading your requests...</p>
-        ) : submissions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 2rem', color: '#666' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
-            <h3 style={{ color: '#4a5568', marginBottom: '0.5rem' }}>No requests yet</h3>
-            <p style={{ marginBottom: '2rem' }}>You haven't submitted any gift requests.</p>
-            <button 
-              onClick={() => setShowForm(true)}
-              className="btn btn-primary"
-            >
-              Submit Your First Request
-            </button>
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Duration</th>
-                  <th>Recipient Username</th>
-                  <th>Recipient Name</th>
-                  <th>Status</th>
-                  <th>Message</th>
-                </tr>
-              </thead>
-              <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id}>
-                    <td>{new Date(submission.createdAt).toLocaleDateString()}</td>
-                    <td>{submission.giftType}</td>
-                    <td>{submission.recipientUsername}</td>
-                    <td>{submission.recipientName}</td>
-                    <td>
-                      <span className={`badge badge-${submission.status.toLowerCase()}`}>
-                        {submission.status}
-                      </span>
-                    </td>
-                    <td>{submission.message || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
-  )
+  );
 }
-
